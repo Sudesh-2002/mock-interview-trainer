@@ -6,3 +6,9 @@ export interface Role {
   description: string;
   topics: string[];
 }
+
+export interface QuestionRequest {
+  roleSlug: string;
+  difficulty: Difficulty;
+  previousQuestions: string[];
+}
