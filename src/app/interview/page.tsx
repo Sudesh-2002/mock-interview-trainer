@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getRole, ROLES } from "@/lib/roles";
 import { buttonStyles } from "@/components/ui/Button";
+import { InterviewSession } from "@/components/interview/InterviewSession";
 
 export default async function InterviewPage({
   searchParams,
@@ -35,9 +36,12 @@ export default async function InterviewPage({
       <p className="text-sm text-slate-500">Interview session</p>
       <h1 className="text-3xl font-bold">{role.title}</h1>
       <p className="mt-2 text-slate-600 dark:text-slate-400">
-        Question streaming arrives in Step 2.
+        {role.description}
       </p>
-      <Link href="/" className={buttonStyles("secondary", "mt-6")}>
+
+      <InterviewSession role={role} />
+
+      <Link href="/" className={buttonStyles("secondary", "mt-10")}>
         Back home
       </Link>
     </div>
