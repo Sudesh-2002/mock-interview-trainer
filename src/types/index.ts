@@ -12,3 +12,10 @@ export interface QuestionRequest {
   difficulty: Difficulty;
   previousQuestions: string[];
 }
+
+export interface EvaluationRequest {
+  roleSlug: string;
+  difficulty: Difficulty;
+  question: string;
+  answer: string;
+}
