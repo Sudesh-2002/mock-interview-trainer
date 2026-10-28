@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { AnswerBox } from "@/components/interview/AnswerBox";
+import { FeedbackCard } from "@/components/interview/FeedbackCard";
 import { useQuestionStream } from "@/hooks/useQuestionStream";
+import { useEvaluation } from "@/hooks/useEvaluation";
 import { cn } from "@/lib/utils";
 import type { Difficulty, Role } from "@/types";
 
@@ -12,17 +15,33 @@ const DIFFICULTIES: Difficulty[] = ["junior", "mid", "senior"];
 export function InterviewSession({ role }: { role: Role }) {
   const [difficulty, setDifficulty] = useState<Difficulty>("mid");
   const [asked, setAsked] = useState<string[]>([]);
+  const [answer, setAnswer] = useState("");
   const { question, status, error, generate } = useQuestionStream();
+  const evaluation = useEvaluation();
 
   const isStreaming = status === "streaming";
+  const isScoring = evaluation.status === "loading";
+  const result = evaluation.status === "done" ? evaluation.data : null;
+  const canAnswer = status === "done" && !result;
 
   async function handleGenerate() {
-    const result = await generate({
+    evaluation.reset();
+    setAnswer("");
+    const text = await generate({
       roleSlug: role.slug,
       difficulty,
       previousQuestions: asked,
     });
-    if (result) setAsked((prev) => [...prev, result]);
+    if (text) setAsked((prev) => [...prev, text]);
+  }
+
+  async function handleSubmit() {
+    await evaluation.evaluate({
+      roleSlug: role.slug,
+      difficulty,
+      question: question.trim(),
+      answer: answer.trim(),
+    });
   }
 
   return (
@@ -34,7 +53,7 @@ export function InterviewSession({ role }: { role: Role }) {
             <button
               key={d}
               type="button"
-              disabled={isStreaming}
+              disabled={isStreaming || isScoring}
               onClick={() => setDifficulty(d)}
               className={cn(
                 "rounded-md px-4 py-1.5 text-sm capitalize transition-colors disabled:opacity-50",
@@ -49,7 +68,7 @@ export function InterviewSession({ role }: { role: Role }) {
         </div>
       </div>
 
-      <Button onClick={handleGenerate} disabled={isStreaming}>
+      <Button onClick={handleGenerate} disabled={isStreaming || isScoring}>
         {isStreaming ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
@@ -78,11 +97,22 @@ export function InterviewSession({ role }: { role: Role }) {
         </div>
       )}
 
-      {status === "done" && (
-        <p className="text-sm text-slate-500">
-          Answer submission and scoring arrive in Step 3.
+      {canAnswer && (
+        <AnswerBox
+          value={answer}
+          onChange={setAnswer}
+          onSubmit={handleSubmit}
+          loading={isScoring}
+        />
+      )}
+
+      {evaluation.error && (
+        <p role="alert" className="text-sm text-red-500">
+          {evaluation.error}
         </p>
       )}
+
+      {result && <FeedbackCard evaluation={result} />}
     </div>
   );
 }
