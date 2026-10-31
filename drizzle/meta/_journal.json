@@ -8,6 +8,13 @@
       "when": 1793272942018,
       "tag": "0000_bright_vector",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793431531011,
+      "tag": "0001_nappy_senator_kelly",
+      "breakpoints": true
     }
   ]
 }
