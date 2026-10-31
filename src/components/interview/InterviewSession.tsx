@@ -5,6 +5,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AnswerBox } from "@/components/interview/AnswerBox";
 import { FeedbackCard } from "@/components/interview/FeedbackCard";
+import { SaveNotice } from "@/components/interview/SaveNotice";
 import { useQuestionStream } from "@/hooks/useQuestionStream";
 import { useEvaluation } from "@/hooks/useEvaluation";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ export function InterviewSession({ role }: { role: Role }) {
   const [difficulty, setDifficulty] = useState<Difficulty>("mid");
   const [asked, setAsked] = useState<string[]>([]);
   const [answer, setAnswer] = useState("");
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const { question, status, error, generate } = useQuestionStream();
   const evaluation = useEvaluation();
 
@@ -23,6 +25,11 @@ export function InterviewSession({ role }: { role: Role }) {
   const isScoring = evaluation.status === "loading";
   const result = evaluation.status === "done" ? evaluation.data : null;
   const canAnswer = status === "done" && !result;
+
+  function handleDifficultyChange(d: Difficulty) {
+    setDifficulty(d);
+    setSessionId(null);
+  }
 
   async function handleGenerate() {
     evaluation.reset();
@@ -36,12 +43,14 @@ export function InterviewSession({ role }: { role: Role }) {
   }
 
   async function handleSubmit() {
-    await evaluation.evaluate({
+    const response = await evaluation.evaluate({
       roleSlug: role.slug,
       difficulty,
       question: question.trim(),
       answer: answer.trim(),
+      sessionId,
     });
+    if (response?.sessionId) setSessionId(response.sessionId);
   }
 
   return (
@@ -54,7 +63,7 @@ export function InterviewSession({ role }: { role: Role }) {
               key={d}
               type="button"
               disabled={isStreaming || isScoring}
-              onClick={() => setDifficulty(d)}
+              onClick={() => handleDifficultyChange(d)}
               className={cn(
                 "rounded-md px-4 py-1.5 text-sm capitalize transition-colors disabled:opacity-50",
                 difficulty === d
@@ -112,7 +121,16 @@ export function InterviewSession({ role }: { role: Role }) {
         </p>
       )}
 
-      {result && <FeedbackCard evaluation={result} />}
+      {result && (
+        <div className="space-y-4">
+          <FeedbackCard evaluation={result.evaluation} />
+          <SaveNotice
+            save={result.save}
+            sessionId={result.sessionId}
+            returnTo={`/interview?role=${role.slug}`}
+          />
+        </div>
+      )}
     </div>
   );
 }
