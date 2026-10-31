@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
           previousQuestions: parsed.data.previousQuestions,
         }),
         temperature: 0.8,
-        max_tokens: 200,
+        max_completion_tokens: 1000,
+        reasoning_effort: "low",
         stream: true,
       },
       { signal: req.signal }

@@ -34,7 +34,8 @@ export async function runEvaluation(
         model: LLM_MODEL,
         messages,
         temperature: 0.2,
-        max_tokens: 1200,
+        max_completion_tokens: 4000,
+        reasoning_effort: "medium",
         response_format: { type: "json_object" },
       },
       { signal }
