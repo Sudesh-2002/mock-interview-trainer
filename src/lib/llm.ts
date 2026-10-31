@@ -5,4 +5,4 @@ export const llm = new OpenAI({
   baseURL: process.env.LLM_BASE_URL ?? "https://api.groq.com/openai/v1",
 });
 
-export const LLM_MODEL = process.env.LLM_MODEL ?? "llama-3.3-70b-versatile";
+export const LLM_MODEL = process.env.LLM_MODEL ?? "qwen/qwen3.8-27b";
