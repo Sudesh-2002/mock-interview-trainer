@@ -1,8 +1,11 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import { auth } from "@/auth";
 import { runEvaluation } from "@/lib/evaluate";
 import { getRole } from "@/lib/roles";
 import { MAX_ANSWER_CHARS, MIN_ANSWER_CHARS } from "@/lib/rubric";
+import { saveAnswer } from "@/lib/save-answer";
+import type { EvaluateResponse } from "@/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +15,7 @@ const bodySchema = z.object({
   difficulty: z.enum(["junior", "mid", "senior"]),
   question: z.string().trim().min(5).max(500),
   answer: z.string().trim().min(MIN_ANSWER_CHARS).max(MAX_ANSWER_CHARS),
+  sessionId: z.string().uuid().nullish(),
 });
 
 export async function POST(req: NextRequest) {
@@ -35,14 +39,48 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Unknown role" }, { status: 404 });
   }
 
+  let evaluation;
   try {
-    const evaluation = await runEvaluation(role, parsed.data, req.signal);
-    return Response.json(evaluation);
+    evaluation = await runEvaluation(role, parsed.data, req.signal);
   } catch (err) {
     console.error("Evaluation failed:", err);
     return Response.json(
       { error: "Could not score your answer. Please try again." },
       { status: 502 }
     );
+  }
+
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    const body: EvaluateResponse = {
+      evaluation,
+      sessionId: null,
+      save: "anonymous",
+    };
+    return Response.json(body);
+  }
+
+  try {
+    const sessionId = await saveAnswer({
+      userId,
+      sessionId: parsed.data.sessionId,
+      roleSlug: parsed.data.roleSlug,
+      difficulty: parsed.data.difficulty,
+      question: parsed.data.question,
+      answer: parsed.data.answer,
+      evaluation,
+    });
+    const body: EvaluateResponse = { evaluation, sessionId, save: "saved" };
+    return Response.json(body);
+  } catch (err) {
+    console.error("Saving answer failed:", err);
+    const body: EvaluateResponse = {
+      evaluation,
+      sessionId: parsed.data.sessionId ?? null,
+      save: "failed",
+    };
+    return Response.json(body);
   }
 }
