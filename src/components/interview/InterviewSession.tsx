@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/Button";
 import { AnswerBox } from "@/components/interview/AnswerBox";
 import { FeedbackCard } from "@/components/interview/FeedbackCard";
 import { SaveNotice } from "@/components/interview/SaveNotice";
+import { SpeechStatsCard } from "@/components/interview/SpeechStatsCard";
 import { useQuestionStream } from "@/hooks/useQuestionStream";
 import { useEvaluation } from "@/hooks/useEvaluation";
+import type { SpeechStats } from "@/lib/speech-metrics";
 import { cn } from "@/lib/utils";
 import type { Difficulty, Role } from "@/types";
 
@@ -18,6 +20,7 @@ export function InterviewSession({ role }: { role: Role }) {
   const [asked, setAsked] = useState<string[]>([]);
   const [answer, setAnswer] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [speechStats, setSpeechStats] = useState<SpeechStats | null>(null);
   const { question, status, error, generate } = useQuestionStream();
   const evaluation = useEvaluation();
 
@@ -34,6 +37,7 @@ export function InterviewSession({ role }: { role: Role }) {
   async function handleGenerate() {
     evaluation.reset();
     setAnswer("");
+    setSpeechStats(null);
     const text = await generate({
       roleSlug: role.slug,
       difficulty,
@@ -42,7 +46,8 @@ export function InterviewSession({ role }: { role: Role }) {
     if (text) setAsked((prev) => [...prev, text]);
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(stats: SpeechStats | null) {
+    setSpeechStats(stats);
     const response = await evaluation.evaluate({
       roleSlug: role.slug,
       difficulty,
@@ -124,6 +129,7 @@ export function InterviewSession({ role }: { role: Role }) {
       {result && (
         <div className="space-y-4">
           <FeedbackCard evaluation={result.evaluation} />
+          {speechStats && <SpeechStatsCard stats={speechStats} />}
           <SaveNotice
             save={result.save}
             sessionId={result.sessionId}
