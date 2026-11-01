@@ -7,23 +7,27 @@ export const DIMENSIONS = [
     label: "Structure",
     description:
       "Logical organization: a clear opening, ordered reasoning, and a conclusion. For behavioral questions, use STAR (Situation, Task, Action, Result).",
+    tip: "Open with a one-line answer, walk through two or three ordered points, and finish with the result. For behavioral questions, practise STAR.",
   },
   {
     key: "clarity",
     label: "Clarity",
     description:
       "Easy to follow: precise wording, no rambling, no unexplained jargon.",
+    tip: "Use short sentences, explain jargon once, and cut filler. Read your answer aloud and trim anything you stumble over.",
   },
   {
     key: "relevance",
     label: "Relevance",
     description: "Directly answers what was asked and stays on topic.",
+    tip: "Restate what the question is really asking before you answer, and skip tangents that don't support it.",
   },
   {
     key: "depth",
     label: "Depth",
     description:
       "Substance: correct details, trade-offs, concrete examples, measurable results.",
+    tip: "Add one concrete example, trade-off, or number (scale, time saved, impact) to every main point.",
   },
 ] as const;
 
