@@ -2,8 +2,9 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { runEvaluation } from "@/lib/evaluate";
-import { getRole } from "@/lib/roles";
+import { CUSTOM_ROLE_SLUG, getRole } from "@/lib/roles";
 import { MAX_ANSWER_CHARS, MIN_ANSWER_CHARS } from "@/lib/rubric";
+import { jobContextSchema, jobLabel } from "@/lib/schemas";
 import { saveAnswer } from "@/lib/save-answer";
 import type { EvaluateResponse } from "@/types";
 
@@ -16,6 +17,7 @@ const bodySchema = z.object({
   question: z.string().trim().min(5).max(500),
   answer: z.string().trim().min(MIN_ANSWER_CHARS).max(MAX_ANSWER_CHARS),
   sessionId: z.string().uuid().nullish(),
+  job: jobContextSchema.nullish(),
 });
 
 export async function POST(req: NextRequest) {
@@ -39,9 +41,18 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Unknown role" }, { status: 404 });
   }
 
+  const isCustom = role.slug === CUSTOM_ROLE_SLUG;
+  const job = isCustom ? (parsed.data.job ?? null) : null;
+  if (isCustom && !job) {
+    return Response.json(
+      { error: "Analyze a job posting first." },
+      { status: 400 }
+    );
+  }
+
   let evaluation;
   try {
-    evaluation = await runEvaluation(role, parsed.data, req.signal);
+    evaluation = await runEvaluation(role, { ...parsed.data, job }, req.signal);
   } catch (err) {
     console.error("Evaluation failed:", err);
     return Response.json(
@@ -68,6 +79,7 @@ export async function POST(req: NextRequest) {
       sessionId: parsed.data.sessionId,
       roleSlug: parsed.data.roleSlug,
       difficulty: parsed.data.difficulty,
+      jobTitle: job ? jobLabel(job) : null,
       question: parsed.data.question,
       answer: parsed.data.answer,
       evaluation,

@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { llm, LLM_MODEL } from "@/lib/llm";
 import { buildQuestionMessages } from "@/lib/prompts";
-import { getRole } from "@/lib/roles";
+import { CUSTOM_ROLE_SLUG, getRole } from "@/lib/roles";
+import { jobContextSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ const bodySchema = z.object({
   roleSlug: z.string().min(1),
   difficulty: z.enum(["junior", "mid", "senior"]),
   previousQuestions: z.array(z.string().max(500)).max(20).default([]),
+  job: jobContextSchema.nullish(),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,6 +33,15 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Unknown role" }, { status: 404 });
   }
 
+  const isCustom = role.slug === CUSTOM_ROLE_SLUG;
+  const job = isCustom ? (parsed.data.job ?? null) : null;
+  if (isCustom && !job) {
+    return Response.json(
+      { error: "Analyze a job posting first." },
+      { status: 400 }
+    );
+  }
+
   try {
     const completion = await llm.chat.completions.create(
       {
@@ -39,6 +50,7 @@ export async function POST(req: NextRequest) {
           role,
           difficulty: parsed.data.difficulty,
           previousQuestions: parsed.data.previousQuestions,
+          job,
         }),
         temperature: 0.8,
         max_completion_tokens: 1000,

@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { answers, db, interviewSessions } from "@/db";
 import type { Evaluation } from "@/lib/schemas";
 import type { Difficulty } from "@/types";
@@ -8,6 +8,7 @@ interface SaveAnswerInput {
   sessionId?: string | null;
   roleSlug: string;
   difficulty: Difficulty;
+  jobTitle?: string | null;
   question: string;
   answer: string;
   evaluation: Evaluation;
@@ -15,6 +16,7 @@ interface SaveAnswerInput {
 
 export async function saveAnswer(input: SaveAnswerInput): Promise<string> {
   const { userId, roleSlug, difficulty, question, answer, evaluation } = input;
+  const jobTitle = input.jobTitle ?? null;
 
   const answerValues = (sessionId: string) => ({
     sessionId,
@@ -37,7 +39,10 @@ export async function saveAnswer(input: SaveAnswerInput): Promise<string> {
           eq(interviewSessions.id, input.sessionId),
           eq(interviewSessions.userId, userId),
           eq(interviewSessions.roleSlug, roleSlug),
-          eq(interviewSessions.difficulty, difficulty)
+          eq(interviewSessions.difficulty, difficulty),
+          jobTitle
+            ? eq(interviewSessions.jobTitle, jobTitle)
+            : isNull(interviewSessions.jobTitle)
         )
       )
       .limit(1);
@@ -52,7 +57,7 @@ export async function saveAnswer(input: SaveAnswerInput): Promise<string> {
   await db.batch([
     db
       .insert(interviewSessions)
-      .values({ id: newId, userId, roleSlug, difficulty }),
+      .values({ id: newId, userId, roleSlug, difficulty, jobTitle }),
     db.insert(answers).values(answerValues(newId)),
   ]);
   return newId;
