@@ -1,4 +1,4 @@
-import type { Evaluation } from "@/lib/schemas";
+import type { Evaluation, JobContext } from "@/lib/schemas";
 
 export type Difficulty = "junior" | "mid" | "senior";
 
@@ -13,6 +13,7 @@ export interface QuestionRequest {
   roleSlug: string;
   difficulty: Difficulty;
   previousQuestions: string[];
+  job?: JobContext | null;
 }
 
 export interface EvaluationRequest {
@@ -21,6 +22,7 @@ export interface EvaluationRequest {
   question: string;
   answer: string;
   sessionId?: string | null;
+  job?: JobContext | null;
 }
 
 export type SaveStatus = "saved" | "anonymous" | "failed";

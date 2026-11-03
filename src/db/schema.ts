@@ -56,6 +56,7 @@ export const interviewSessions = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     roleSlug: text("role_slug").notNull(),
     difficulty: difficultyEnum("difficulty").notNull(),
+    jobTitle: text("job_title"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
