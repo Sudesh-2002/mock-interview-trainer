@@ -11,12 +11,23 @@ import { useQuestionStream } from "@/hooks/useQuestionStream";
 import { useEvaluation } from "@/hooks/useEvaluation";
 import type { SpeechStats } from "@/lib/speech-metrics";
 import { cn } from "@/lib/utils";
+import type { JobContext } from "@/lib/schemas";
 import type { Difficulty, Role } from "@/types";
 
 const DIFFICULTIES: Difficulty[] = ["junior", "mid", "senior"];
 
-export function InterviewSession({ role }: { role: Role }) {
-  const [difficulty, setDifficulty] = useState<Difficulty>("mid");
+interface InterviewSessionProps {
+  role: Role;
+  job?: JobContext | null;
+  defaultDifficulty?: Difficulty;
+}
+
+export function InterviewSession({
+  role,
+  job = null,
+  defaultDifficulty = "mid",
+}: InterviewSessionProps) {
+  const [difficulty, setDifficulty] = useState<Difficulty>(defaultDifficulty);
   const [asked, setAsked] = useState<string[]>([]);
   const [answer, setAnswer] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -38,10 +49,11 @@ export function InterviewSession({ role }: { role: Role }) {
     evaluation.reset();
     setAnswer("");
     setSpeechStats(null);
-    const text = await generate({
+      const text = await generate({
       roleSlug: role.slug,
       difficulty,
       previousQuestions: asked,
+      job,
     });
     if (text) setAsked((prev) => [...prev, text]);
   }
@@ -54,6 +66,7 @@ export function InterviewSession({ role }: { role: Role }) {
       question: question.trim(),
       answer: answer.trim(),
       sessionId,
+      job,
     });
     if (response?.sessionId) setSessionId(response.sessionId);
   }

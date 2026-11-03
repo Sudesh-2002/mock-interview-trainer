@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { getRole, ROLES } from "@/lib/roles";
+import { CUSTOM_ROLE_SLUG, getRole, ROLES } from "@/lib/roles";
 import { buttonStyles } from "@/components/ui/Button";
 import { InterviewSession } from "@/components/interview/InterviewSession";
+import { JobInterview } from "@/components/interview/JobInterview";
 
 export default async function InterviewPage({
   searchParams,
@@ -39,7 +40,11 @@ export default async function InterviewPage({
         {role.description}
       </p>
 
-      <InterviewSession role={role} />
+      {role.slug === CUSTOM_ROLE_SLUG ? (
+        <JobInterview role={role} />
+      ) : (
+        <InterviewSession role={role} />
+      )}
 
       <Link href="/" className={buttonStyles("secondary", "mt-10")}>
         Back home
