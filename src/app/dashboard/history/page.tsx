@@ -40,7 +40,7 @@ export default async function HistoryPage() {
               >
                 <div>
                   <p className="font-medium">
-                    {getRole(s.roleSlug)?.title ?? s.roleSlug}
+                    {s.jobTitle ?? getRole(s.roleSlug)?.title ?? s.roleSlug}
                   </p>
                   <p className="text-sm capitalize text-slate-500">
                     {s.difficulty} · {dateFormat.format(s.createdAt)} ·{" "}
