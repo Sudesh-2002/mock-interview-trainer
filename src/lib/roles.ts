@@ -1,6 +1,15 @@
 import type { Role } from "@/types";
 
+export const CUSTOM_ROLE_SLUG = "custom-job";
+
 export const ROLES: Role[] = [
+  {
+    slug: CUSTOM_ROLE_SLUG,
+    title: "From a Job Posting",
+    description:
+      "Paste a real job description and practise with questions tailored to it.",
+    topics: ["Your target job", "Tailored questions", "Any industry"],
+  },
   {
     slug: "frontend-engineer",
     title: "Frontend Engineer",
