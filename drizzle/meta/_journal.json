@@ -15,6 +15,13 @@
       "when": 1793431531011,
       "tag": "0001_nappy_senator_kelly",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793728558306,
+      "tag": "0002_loose_cyclops",
+      "breakpoints": true
     }
   ]
 }
