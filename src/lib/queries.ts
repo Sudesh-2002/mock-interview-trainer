@@ -13,6 +13,7 @@ export async function getUserSessions(userId: string, limit = 50) {
       id: interviewSessions.id,
       roleSlug: interviewSessions.roleSlug,
       difficulty: interviewSessions.difficulty,
+      jobTitle: interviewSessions.jobTitle,
       createdAt: interviewSessions.createdAt,
       answerCount: count(answers.id),
       avgOverall: avg(answers.overall),
