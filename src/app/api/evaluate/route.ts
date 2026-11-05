@@ -7,9 +7,11 @@ import { MAX_ANSWER_CHARS, MIN_ANSWER_CHARS } from "@/lib/rubric";
 import { jobContextSchema, jobLabel } from "@/lib/schemas";
 import { saveAnswer } from "@/lib/save-answer";
 import type { EvaluateResponse } from "@/types";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const bodySchema = z.object({
   roleSlug: z.string().min(1),
@@ -49,6 +51,9 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  const limited = await enforceRateLimit(req, "evaluate");
+  if (limited) return limited;
 
   let evaluation;
   try {

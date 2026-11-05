@@ -84,6 +84,12 @@ export const answers = pgTable(
   (t) => [index("answers_session_idx").on(t.sessionId)]
 );
 
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(interviewSessions),
 }));

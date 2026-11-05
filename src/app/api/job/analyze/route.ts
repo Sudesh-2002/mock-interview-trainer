@@ -1,9 +1,11 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { extractJob, NotAJobPostingError } from "@/lib/extract-job";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const bodySchema = z.object({
   description: z.string().trim().min(100).max(8000),
@@ -24,6 +26,9 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  const limited = await enforceRateLimit(req, "job");
+  if (limited) return limited;
 
   try {
     const job = await extractJob(parsed.data.description, req.signal);
