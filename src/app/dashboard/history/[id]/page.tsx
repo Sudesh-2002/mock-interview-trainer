@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { FeedbackCard } from "@/components/interview/FeedbackCard";
 import { getSessionWithAnswers } from "@/lib/queries";
 import { getRole } from "@/lib/roles";
+import { DeleteSessionButton } from "@/components/dashboard/DeleteSessionButton";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" });
 
@@ -39,6 +40,7 @@ export default async function SessionDetailPage({
         {data.difficulty} · {dateFormat.format(data.createdAt)} ·{" "}
         {data.answers.length} {data.answers.length === 1 ? "answer" : "answers"}
       </p>
+      <DeleteSessionButton sessionId={data.id} />
 
       <div className="mt-10 space-y-12">
         {data.answers.map((a, i) => (
