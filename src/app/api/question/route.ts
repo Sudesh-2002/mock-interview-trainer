@@ -4,9 +4,11 @@ import { llm, LLM_MODEL } from "@/lib/llm";
 import { buildQuestionMessages } from "@/lib/prompts";
 import { CUSTOM_ROLE_SLUG, getRole } from "@/lib/roles";
 import { jobContextSchema } from "@/lib/schemas";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const bodySchema = z.object({
   roleSlug: z.string().min(1),
@@ -41,6 +43,9 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  const limited = await enforceRateLimit(req, "question");
+  if (limited) return limited;
 
   try {
     const completion = await llm.chat.completions.create(
