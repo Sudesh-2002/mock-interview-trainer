@@ -1,4 +1,4 @@
-# InterviewPrep: AI Mock Interview Trainer
+# InterviewPreparation: AI Mock Interview Trainer
 
 Practice interviews with AI-generated questions, rubric-based scoring, voice input and progress tracking. Try it without signing in.
 
